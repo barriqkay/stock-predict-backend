@@ -6,13 +6,10 @@ from sklearn.preprocessing import MinMaxScaler
 
 # Konfigurasi
 SEQ_LEN = 60
-MODEL_PATH = "stock_model.keras"
+MODEL_PATH = "stock_model.h5"  # gunakan model H5
 
-# Gunakan custom_object_scope kosong agar tidak error dtype policy
-from tensorflow.keras import utils as keras_utils
-
-with keras_utils.custom_object_scope({}):
-    model = tf.keras.models.load_model(MODEL_PATH)
+# Load model
+model = tf.keras.models.load_model(MODEL_PATH)
 
 app = Flask(__name__)
 
@@ -26,7 +23,7 @@ def prepare_data(ticker, period="1y"):
     scaler = MinMaxScaler()
     data_scaled = scaler.fit_transform(df)
 
-    # Ambil data terakhir SEQ_LEN hari untuk prediksi hari berikutnya
+    # Ambil data terakhir SEQ_LEN hari untuk prediksi
     last_sequence = data_scaled[-SEQ_LEN:]
     X = np.array(last_sequence).reshape(1, SEQ_LEN, 1)
 
