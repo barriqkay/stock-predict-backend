@@ -1,11 +1,12 @@
 yfinance
 pandas
-numpy
+tensorflow==2.12.0
+numpy==1.26.4
 scikit-learn
-tensorflow==2.11.0
 joblib
 fastapi
 python-multipart
 plotly
 Flask==3.0.3
 gunicorn
+h5py
