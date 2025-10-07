@@ -3,19 +3,16 @@ import tensorflow as tf
 import yfinance as yf
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.layers import InputLayer
 
+# Konfigurasi
 SEQ_LEN = 60
 MODEL_PATH = "stock_model.keras"
 
-# Custom function untuk menghapus 'batch_shape' saat load model lama
-def custom_input_layer(*args, **kwargs):
-    kwargs.pop('batch_shape', None)
-    return InputLayer(*args, **kwargs)
+# Gunakan custom_object_scope kosong agar tidak error dtype policy
+from tensorflow.keras import utils as keras_utils
 
-# Load model
-model = tf.keras.models.load_model(MODEL_PATH, custom_objects={'InputLayer': custom_input_layer})
-model.make_predict_function()
+with keras_utils.custom_object_scope({}):
+    model = tf.keras.models.load_model(MODEL_PATH)
 
 app = Flask(__name__)
 
@@ -23,20 +20,26 @@ def prepare_data(ticker, period="1y"):
     df = yf.download(ticker, period=period, interval="1d")
     if df.empty:
         raise ValueError(f"Tidak ada data untuk {ticker}")
+    
     df = df[['Close']].dropna()
+
     scaler = MinMaxScaler()
     data_scaled = scaler.fit_transform(df)
+
+    # Ambil data terakhir SEQ_LEN hari untuk prediksi hari berikutnya
     last_sequence = data_scaled[-SEQ_LEN:]
     X = np.array(last_sequence).reshape(1, SEQ_LEN, 1)
+
     return X, scaler, df
 
 @app.route("/predict", methods=["GET"])
 def predict():
-    ticker = request.args.get("ticker", default="GGRM.JK")
+    ticker = request.args.get("ticker", default="GGRM.JK")  # default Gudang Garam
     try:
         X, scaler, df = prepare_data(ticker)
         pred_scaled = model.predict(X, verbose=0)
         pred_price = scaler.inverse_transform(pred_scaled)[0][0]
+
         return jsonify({
             "ticker": ticker,
             "last_close": float(df['Close'].iloc[-1]),
