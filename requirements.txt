@@ -2,7 +2,7 @@ yfinance
 pandas
 tensorflow==2.12.0
 keras==2.12.0
-numpy==1.26.4
+numpy==1.23.5
 scikit-learn
 joblib
 fastapi
