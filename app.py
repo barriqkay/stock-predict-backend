@@ -1,51 +1,50 @@
 from flask import Flask, request, jsonify
 import tensorflow as tf
-import yfinance as yf
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
-
-# Konfigurasi
-SEQ_LEN = 60
-MODEL_PATH = "stock_model.h5"  # gunakan model H5
-
-# Load model
-model = tf.keras.models.load_model(MODEL_PATH)
+import os
 
 app = Flask(__name__)
 
-def prepare_data(ticker, period="1y"):
-    df = yf.download(ticker, period=period, interval="1d")
-    if df.empty:
-        raise ValueError(f"Tidak ada data untuk {ticker}")
-    
-    df = df[['Close']].dropna()
+# Path ke model H5 (pastikan sudah push ke repo)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "stock_model.h5")
 
-    scaler = MinMaxScaler()
-    data_scaled = scaler.fit_transform(df)
+# Load model tanpa compile untuk menghindari error
+try:
+    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+    print("Model berhasil dimuat!")
+except Exception as e:
+    print("Gagal load model:", e)
+    raise e
 
-    # Ambil data terakhir SEQ_LEN hari untuk prediksi
-    last_sequence = data_scaled[-SEQ_LEN:]
-    X = np.array(last_sequence).reshape(1, SEQ_LEN, 1)
+@app.route("/")
+def home():
+    return "API Stock Prediction Online!"
 
-    return X, scaler, df
-
-@app.route("/predict", methods=["GET"])
+@app.route("/predict", methods=["POST"])
 def predict():
-    ticker = request.args.get("ticker", default="GGRM.JK")  # default Gudang Garam
+    """
+    POST JSON contoh:
+    {
+        "data": [[0.1, 0.2, 0.3, 0.4], ...]  # shape (30, 4)
+    }
+    """
     try:
-        X, scaler, df = prepare_data(ticker)
-        pred_scaled = model.predict(X, verbose=0)
-        pred_price = scaler.inverse_transform(pred_scaled)[0][0]
+        data = request.json["data"]
+        data = np.array(data, dtype=np.float32)
 
-        return jsonify({
-            "ticker": ticker,
-            "last_close": float(df['Close'].iloc[-1]),
-            "predicted_next": float(pred_price)
-        })
+        # Pastikan shape sesuai (1, 30, 4)
+        if data.shape != (30, 4):
+            return jsonify({"error": "Data harus memiliki shape (30, 4)"}), 400
+        data = np.expand_dims(data, axis=0)
+
+        # Prediksi
+        prediction = model.predict(data)
+        prediction_value = float(prediction[0][0])
+
+        return jsonify({"prediction": prediction_value})
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
