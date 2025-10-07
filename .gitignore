@@ -1,0 +1,53 @@
+# -----------------------------
+# Flutter / Dart
+# -----------------------------
+# Build outputs
+/build/
+/ios/Flutter/Flutter.framework
+/.dart_tool/
+/.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/.idea/
+/*.iml
+
+# Generated files
+*.lock
+*.log
+*.tmp
+
+# Android Studio
+*.apk
+*.aab
+*.gradle
+/local.properties
+/.idea/
+/*.iml
+
+# iOS
+*.xcworkspace
+*.xcuserdatad
+Pods/
+
+# -----------------------------
+# Python / FastAPI
+# -----------------------------
+# Virtual environment
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Python logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.sqlite3
+*.db

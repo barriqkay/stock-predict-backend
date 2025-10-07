@@ -1,0 +1,6 @@
+*** old/train_model.py
+--- new/train_model.py
+***************
+-    data, targets = data[valid], targets[valid]
++    data = data[valid, :]
++    targets = targets[valid]

@@ -1,0 +1,16 @@
+yfinance
+pandas
+numpy
+scikit-learn
+tensorflow
+joblib
+fastapi
+uvicorn[standard]
+python-multipart
+plotly
+Flask==3.0.3
+tensorflow==2.15.0
+yfinance==0.2.43
+numpy==1.26.4
+scikit-learn==1.5.0
+gunicorn==21.2.0
