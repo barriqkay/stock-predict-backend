@@ -2,7 +2,7 @@ yfinance
 pandas
 numpy
 scikit-learn
-tensorflow==2.15.0
+tensorflow==2.11.0
 joblib
 fastapi
 python-multipart
